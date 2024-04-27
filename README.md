@@ -7,6 +7,12 @@
 
 # 2. Wymagania i funkcje systemu
 
+- Kategoryzacja obecnych samochodów, oraz określanie ich specifikacji, eksploatacji.
+- Koszty wynajmu i cennik.
+- Możliwość określenia obecnie dostępnych samochodów.
+- Możliwośc określenia terminów wynajmu.
+- Możliwośc przechowywania danych konsumentów.
+
 # 3. Projekt bazy danych
 
 ## Schemat bazy danych
