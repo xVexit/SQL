@@ -19,6 +19,8 @@ System bazy danych został stworzony w celu zarządzania wszelkimi aspektami ope
 
 ## Schemat bazy danych
 
+<img src="images/diagram.png">
+
 ## Opis poszczególnych tabel
 
 # 4. Implementacja
