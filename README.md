@@ -28,12 +28,12 @@ Podsumowując, system jest kompleksowym rozwiązaniem dla wypożyczalni samochod
     - Monitorowanie historii wynajmów dla każdego klienta.
     - Zarządzanie danymi dotyczącymi lokalizacji klientów.
 
-- **Zarządzanie flotą pojazdami**:
+- **Zarządzanie Flotą Pojazdów**:
     - Śledzenie dostępności pojazdów w czasie rzeczywistym, zapewniające efektywne zarządzanie flotą.
     - Monitorowanie stanu technicznego i serwisowania pojazdów.
     - Zarządzanie polisami ubezpieczeniowymi przypisanymi do pojazdów.
 
-- **Zarządzanie zniżkami**:
+- **Zarządzanie Zniżkami**:
     - Tworzenie i zarządzanie ofertami promocyjnymi i zniżkami dla klientów.
     - Implementacja systemu kodów rabatowych przy transakcjach wynajmu.
 
