@@ -148,7 +148,7 @@ Podsumowując, system jest kompleksowym rozwiązaniem dla wypożyczalni samochod
 
 ```sql
 CREATE TABLE car_pricing_group(
-    car_pricing_group_id INT NOT NULL,
+    car_pricing_group_id INT NOT NULL IDENTITY(1, 1),
     price_per_day INT NOT NULL,
     description VARCHAR(255) NOT NULL,
     PRIMARY KEY(car_pricing_group_id)
@@ -157,7 +157,7 @@ CREATE TABLE car_pricing_group(
 
 ```sql
 CREATE TABLE car_types(
-    car_type_id INT NOT NULL,
+    car_type_id INT NOT NULL IDENTITY(1, 1),
     description VARCHAR(255) NOT NULL,
     PRIMARY KEY(car_type_id)
 );
@@ -165,7 +165,7 @@ CREATE TABLE car_types(
 
 ```sql
 CREATE TABLE car_manufacturers(
-    car_manufacturer_id INT NOT NULL,
+    car_manufacturer_id INT NOT NULL IDENTITY(1, 1),
     description VARCHAR(255) NOT NULL,
     PRIMARY KEY(car_manufacturer_id)
 );
@@ -173,7 +173,7 @@ CREATE TABLE car_manufacturers(
 
 ```sql
 CREATE TABLE car_models(
-    car_model_id INT NOT NULL,
+    car_model_id INT NOT NULL IDENTITY(1, 1),
     car_manufacturer_id INT NOT NULL,
     model VARCHAR(32) NOT NULL,
     PRIMARY KEY(car_model_id),
@@ -183,7 +183,7 @@ CREATE TABLE car_models(
 
 ```sql
 CREATE TABLE gearboxes(
-    gearbox_id INT NOT NULL,
+    gearbox_id INT NOT NULL IDENTITY(1, 1),
     description VARCHAR(255) NOT NULL,
     PRIMARY KEY(gearbox_id)
 );
@@ -191,7 +191,7 @@ CREATE TABLE gearboxes(
 
 ```sql
 CREATE TABLE cars(
-    car_id INT NOT NULL,
+    car_id INT NOT NULL IDENTITY(1, 1),
     car_pricing_group_id INT NOT NULL,
     car_type_id INT NOT NULL,
     car_model_id INT NOT NULL,
@@ -211,7 +211,7 @@ CREATE TABLE cars(
 
 ```sql
 CREATE TABLE cities(
-    city_id INT NOT NULL,
+    city_id INT NOT NULL IDENTITY(1, 1),
     city_name VARCHAR(32) NOT NULL,
     PRIMARY KEY(city_id)
 );
@@ -219,7 +219,7 @@ CREATE TABLE cities(
 
 ```sql
 CREATE TABLE clients(
-    client_id INT NOT NULL,
+    client_id INT NOT NULL IDENTITY(1, 1),
     name VARCHAR(32) NOT NULL,
     surname VARCHAR(32) NOT NULL,
     pesel VARCHAR(11) NOT NULL,
@@ -236,7 +236,7 @@ CREATE TABLE clients(
 
 ```sql
 CREATE TABLE rents(
-    rent_id INT NOT NULL,
+    rent_id INT NOT NULL IDENTITY(1, 1),
     car_id INT NOT NULL,
     client_id INT NOT NULL,
     begining TIMESTAMP NOT NULL,
@@ -249,7 +249,7 @@ CREATE TABLE rents(
 
 ```sql
 CREATE TABLE discounts(
-    discount_id INT NOT NULL,
+    discount_id INT NOT NULL IDENTITY(1, 1),
     client_id INT NOT NULL,
     discount DECIMAL NOT NULL,
     code VARCHAR(8) NOT NULL,
@@ -260,7 +260,7 @@ CREATE TABLE discounts(
 
 ```sql
 CREATE TABLE rent_extensions(
-    rent_extension_id INT NOT NULL,
+    rent_extension_id INT NOT NULL IDENTITY(1, 1),
     rent_id INT NOT NULL,
     number_of_days INT NOT NULL,
     discount_id INT NULL,
@@ -272,7 +272,7 @@ CREATE TABLE rent_extensions(
 
 ```sql
 CREATE TABLE insurance_companies(
-    insurance_company_id INT NOT NULL,
+    insurance_company_id INT NOT NULL IDENTITY(1, 1),
     phone_number VARCHAR(16) NOT NULL,
     description VARCHAR(255) NOT NULL,
     PRIMARY KEY(insurance_company_id)
@@ -281,7 +281,7 @@ CREATE TABLE insurance_companies(
 
 ```sql
 CREATE TABLE insurances(
-    insurance_id INT NOT NULL,
+    insurance_id INT NOT NULL IDENTITY(1, 1),
     car_id INT NOT NULL,
     insurance_company_id INT NOT NULL,
     begining_date DATETIME NOT NULL,
@@ -294,7 +294,7 @@ CREATE TABLE insurances(
 
 ```sql
 CREATE TABLE services(
-    service_id INT NOT NULL,
+    service_id INT NOT NULL IDENTITY(1, 1),
     price INT NOT NULL,
     description VARCHAR(255) NOT NULL,
     PRIMARY KEY(service_id)
@@ -303,7 +303,7 @@ CREATE TABLE services(
 
 ```sql
 CREATE TABLE rent_services(
-    rent_service_id INT NOT NULL,
+    rent_service_id INT NOT NULL IDENTITY(1, 1),
     service_id INT NOT NULL,
     rent_id INT NOT NULL,
     price INT NOT NULL,
