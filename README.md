@@ -239,7 +239,7 @@ CREATE TABLE rents(
     rent_id INT NOT NULL IDENTITY(1, 1),
     car_id INT NOT NULL,
     client_id INT NOT NULL,
-    begining TIMESTAMP NOT NULL,
+    begining DATETIME NOT NULL,
     price_per_day INT NOT NULL,
     PRIMARY KEY(rent_id),
     CONSTRAINT rents_car_id FOREIGN KEY (car_id) REFERENCES cars(car_id),
