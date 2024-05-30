@@ -251,7 +251,7 @@ CREATE TABLE rents(
 CREATE TABLE discounts(
     discount_id INT NOT NULL IDENTITY(1, 1),
     client_id INT NOT NULL,
-    discount DECIMAL NOT NULL,
+    discount DECIMAL(3, 2) NOT NULL,
     code VARCHAR(8) NOT NULL,
     PRIMARY KEY(discount_id),
     CONSTRAINT discounts_client_id FOREIGN KEY (client_id) REFERENCES clients(client_id)
