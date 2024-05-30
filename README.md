@@ -49,6 +49,99 @@ Podsumowując, system jest kompleksowym rozwiązaniem dla wypożyczalni samochod
 
 ## Opis poszczególnych tabel
 
+- **rent_extensions:** Tabela przechowuje informacje o przedłużeniach wynajmu. Każde przedłużenie jest powiązane z określonym wynajmem i może obejmować zniżkę.
+    - `rent_extension_id`: Unikalny identyfikator przedłużenia wynajmu.
+    - `rent_id`: Identyfikator wynajmu, do którego odnosi się przedłużenie.
+    - `number_of_days`: Liczba dni przedłużenia wynajmu.
+    - `discount_id`: Identyfikator zniżki zastosowanej do przedłużenia (opcjonalnie).
+
+- **rents:** Tabela zawiera informacje o wynajmach samochodów. Każdy wpis odnosi się do konkretnego samochodu i klienta.
+    - `rent_id`: Unikalny identyfikator wynajmu.
+    - `car_id`: Identyfikator wynajmowanego samochodu.
+    - `client_id`: Identyfikator klienta wynajmującego samochód.
+    - `begining`: Data i godzina rozpoczęcia wynajmu.
+    - `price_per_day`: Cena wynajmu za dzień.
+
+- **car_pricing_group:** Tabela przechowuje informacje o grupach cenowych samochodów.
+    - `car_pricing_group_id`: Unikalny identyfikator grupy cenowej.
+    - `price_per_day`: Cena wynajmu za dzień w tej grupie cenowej.
+    - `description`: Opis grupy cenowej.
+
+- **discounts:** Tabela zawiera informacje o zniżkach przyznawanych klientom.
+    - `discount_id`: Unikalny identyfikator zniżki.
+    - `client_id`: Identyfikator klienta, który otrzymał zniżkę.
+    - `discount`: Wartość zniżki procentowo.
+    - `code`: Kod zniżki.
+
+- **car_models:** Tabela przechowuje informacje o modelach samochodów.
+    - `car_model_id`: Unikalny identyfikator modelu samochodu.
+    - `car_manufacturer_id`: Identyfikator producenta samochodu.
+    - `model`: Nazwa modelu samochodu.
+
+- **car_types:** Tabela zawiera informacje o typach samochodów.
+    - `car_type_id`: Unikalny identyfikator typu samochodu.
+    - `description`: Opis typu samochodu.
+
+- **insurances:** Tabela przechowuje informacje o ubezpieczeniach samochodów.
+    - `insurance_id`: Unikalny identyfikator ubezpieczenia.
+    - `car_id`: Identyfikator ubezpieczonego samochodu.
+    - `insurance_company_id`: Identyfikator firmy ubezpieczeniowej.
+    - `begining`: Data rozpoczęcia ubezpieczenia.
+    - `end`: Data zakończenia ubezpieczenia.
+
+- **cities:** Tabela zawiera informacje o miastach.
+    - `city_id`: Unikalny identyfikator miasta.
+    - `city_name`: Nazwa miasta.
+
+- **insurance_companies:** Tabela przechowuje informacje o firmach ubezpieczeniowych.
+    - `insurance_company_id`: Unikalny identyfikator firmy ubezpieczeniowej.
+    - `phone_number`: Numer telefonu firmy ubezpieczeniowej.
+    - `description`: Opis firmy ubezpieczeniowej.
+
+- **car_manufacurers:** Tabela zawiera informacje o producentach samochodów.
+    - `car_manufacurer_id`: Unikalny identyfikator producenta samochodu.
+    - `description`: Opis producenta samochodu.
+
+- **services:** Tabela przechowuje informacje o usługach dodatkowych.
+    - `service_id`: Unikalny identyfikator usługi.
+    - `price`: Cena usługi.
+    - `description`: Opis usługi.
+
+- **cars:** Tabela zawiera informacje o samochodach dostępnych do wynajmu.
+    - `car_id`: Unikalny identyfikator samochodu.
+    - `car_pricing_group_id`: Identyfikator grupy cenowej samochodu.
+    - `car_type_id`: Identyfikator typu samochodu.
+    - `car_model_id`: Identyfikator modelu samochodu.
+    - `gearbox_id`: Identyfikator skrzyni biegów.
+    - `milage`: Przebieg samochodu.
+    - `horsepower`: Moc silnika w koniach mechanicznych.
+    - `deposit`: Kaucja za wynajem samochodu.
+    - `oil_change_rate`: Częstotliwość wymiany oleju w kilometrach.
+    - `out_of_service`: Status dostępności samochodu (0 - dostępny, 1 - niedostępny).
+
+- **gearboxes:** Tabela przechowuje informacje o skrzyniach biegów.
+    - `gearbox_id`: Unikalny identyfikator skrzyni biegów.
+    - `description`: Opis skrzyni biegów.
+
+- **rent_services:** Tabela zawiera informacje o usługach dodatkowych powiązanych z wynajmem.
+    - `rent_service_id`: Unikalny identyfikator usługi wynajmu.
+    - `service_id`: Identyfikator usługi.
+    - `rent_id`: Identyfikator wynajmu.
+    - `price`: Cena usługi wynajmu.
+    - `discount_id`: Identyfikator zniżki na usługę wynajmu (opcjonalnie).
+
+- **clients:** Tabela przechowuje informacje o klientach.
+    - `client_id`: Unikalny identyfikator klienta.
+    - `name`: Imię klienta.
+    - `surname`: Nazwisko klienta.
+    - `pesel`: Numer PESEL klienta.
+    - `phone_number`: Numer telefonu klienta.
+    - `street_address`: Adres zamieszkania klienta.
+    - `city_id`: Identyfikator miasta, w którym mieszka klient.
+    - `postal_code`: Kod pocztowy klienta.
+    - `id_number`: Numer dowodu osobistego klienta.
+    - `email`: Adres e-mail klienta.
+
 # 4. Implementacja
 
 ## Kod poleceń DDL
