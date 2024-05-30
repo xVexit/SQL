@@ -317,6 +317,38 @@ CREATE TABLE rent_services(
 
 ## Widoki
 
+```sql
+CREATE VIEW rents_timespan AS
+SELECT
+    rents.rent_id,
+    rents.begining as begining_date,
+    DATEADD(DAY, SUM(rent_extensions.number_of_days), rents.begining) as ending_date
+FROM rents
+JOIN rent_extensions
+    ON rent_extensions.rent_id = rents.rent_id
+GROUP BY rents.rent_id, rents.begining;
+```
+
+```sql
+CREATE VIEW rents_active AS
+SELECT
+    rent_id,
+    begining_date,
+    ending_date
+FROM rents_timespan
+WHERE begining_date < GETDATE() AND ending_date > GETDATE();
+```
+
+```sql
+CREATE VIEW rents_expired AS
+SELECT
+    rent_id,
+    begining_date,
+    ending_date
+FROM rents_timespan
+WHERE ending_date < GETDATE();
+```
+
 ## Procedury/funkcje
 
 ## Triggery
