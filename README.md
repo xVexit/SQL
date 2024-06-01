@@ -149,7 +149,7 @@ Podsumowując, system jest kompleksowym rozwiązaniem dla wypożyczalni samochod
 ```sql
 CREATE TABLE car_pricing_group(
     car_pricing_group_id INT NOT NULL IDENTITY(1, 1),
-    price_per_day INT NOT NULL,
+    price_per_day INT NOT NULL CHECK (price_per_day > 0),
     description VARCHAR(255) NOT NULL,
     PRIMARY KEY(car_pricing_group_id)
 );
@@ -196,10 +196,10 @@ CREATE TABLE cars(
     car_type_id INT NOT NULL,
     car_model_id INT NOT NULL,
     gearbox_id INT NOT NULL,
-    milage INT NOT NULL,
-    horsepower INT NOT NULL,
-    deposit INT NOT NULL,
-    oil_change_rate INT NOT NULL,
+    milage INT NOT NULL CHECK (milage >= 0),
+    horsepower INT NOT NULL CHECK (horsepower > 0),
+    deposit INT NOT NULL CHECK (deposit >= 0),
+    oil_change_rate INT NOT NULL CHECK (oil_change_rate > 0),
     out_of_service BIT NOT NULL,
     PRIMARY KEY(car_id),
     CONSTRAINT cars_car_pricing_group_id FOREIGN KEY (car_pricing_group_id) REFERENCES car_pricing_group(car_pricing_group_id),
@@ -240,7 +240,7 @@ CREATE TABLE rents(
     car_id INT NOT NULL,
     client_id INT NOT NULL,
     begining DATETIME NOT NULL,
-    price_per_day INT NOT NULL,
+    price_per_day INT NOT NULL CHECK (price_per_day > 0),
     PRIMARY KEY(rent_id),
     CONSTRAINT rents_car_id FOREIGN KEY (car_id) REFERENCES cars(car_id),
     CONSTRAINT rents_client_id FOREIGN KEY (client_id) REFERENCES clients(client_id)
@@ -251,7 +251,7 @@ CREATE TABLE rents(
 CREATE TABLE discounts(
     discount_id INT NOT NULL IDENTITY(1, 1),
     client_id INT NOT NULL,
-    discount DECIMAL(3, 2) NOT NULL,
+    discount DECIMAL(3, 2) NOT NULL CHECK (discount > 0 AND discount < 1),
     code VARCHAR(8) NOT NULL,
     PRIMARY KEY(discount_id),
     CONSTRAINT discounts_client_id FOREIGN KEY (client_id) REFERENCES clients(client_id)
@@ -262,7 +262,7 @@ CREATE TABLE discounts(
 CREATE TABLE rent_extensions(
     rent_extension_id INT NOT NULL IDENTITY(1, 1),
     rent_id INT NOT NULL,
-    number_of_days INT NOT NULL,
+    number_of_days INT NOT NULL CHECK (number_of_days > 0),
     discount_id INT NULL,
     PRIMARY KEY(rent_extension_id),
     CONSTRAINT rent_extensions_rent_id FOREIGN KEY (rent_id) REFERENCES rents(rent_id),
@@ -288,14 +288,15 @@ CREATE TABLE insurances(
     end_date DATETIME NOT NULL,
     PRIMARY KEY(insurance_id),
     CONSTRAINT insurances_car_id FOREIGN KEY (car_id) REFERENCES cars(car_id),
-    CONSTRAINT insurances_insurance_company_id FOREIGN KEY (insurance_company_id) REFERENCES insurance_companies(insurance_company_id)
+    CONSTRAINT insurances_insurance_company_id FOREIGN KEY (insurance_company_id) REFERENCES insurance_companies(insurance_company_id),
+    CONSTRAINT date_check CHECK (begining_date < end_date)
 );
 ```
 
 ```sql
 CREATE TABLE services(
     service_id INT NOT NULL IDENTITY(1, 1),
-    price INT NOT NULL,
+    price INT NOT NULL CHECK (price > 0),
     description VARCHAR(255) NOT NULL,
     PRIMARY KEY(service_id)
 );
@@ -306,7 +307,7 @@ CREATE TABLE rent_services(
     rent_service_id INT NOT NULL IDENTITY(1, 1),
     service_id INT NOT NULL,
     rent_id INT NOT NULL,
-    price INT NOT NULL,
+    price INT NOT NULL CHECK (price > 0),
     discount_id INT NULL,
     PRIMARY KEY(rent_service_id),
     CONSTRAINT rent_services_service_id FOREIGN KEY (service_id) REFERENCES services(service_id),
