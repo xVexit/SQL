@@ -349,6 +349,22 @@ FROM rents_timespan
 WHERE ending_date < GETDATE();
 ```
 
+```sql
+CREATE VIEW discounts_used AS
+SELECT discount_id FROM rent_services
+WHERE discount_id IS NOT NULL
+UNION
+SELECT discount_id FROM rent_extensions
+WHERE discount_id IS NOT NULL;
+```
+
+```sql
+CREATE VIEW discounts_available AS
+SELECT discount_id, code
+FROM discounts
+WHERE (SELECT COUNT(*) FROM discounts_used WHERE discount_id = discounts.discount_id) = 0;
+```
+
 ## Procedury/funkcje
 
 ## Triggery
