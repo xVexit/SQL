@@ -318,53 +318,73 @@ CREATE TABLE rent_services(
 
 ## Widoki
 
-```sql
-CREATE VIEW rents_timespan AS
-SELECT
-    rents.rent_id,
-    rents.begining as begining_date,
-    DATEADD(DAY, SUM(rent_extensions.number_of_days), rents.begining) as ending_date
-FROM rents
-JOIN rent_extensions
-    ON rent_extensions.rent_id = rents.rent_id
-GROUP BY rents.rent_id, rents.begining;
-```
+### Widok rents_timespan:
+- **Implementacja:**
+    ```sql
+    CREATE VIEW rents_timespan AS
+    SELECT
+        rents.rent_id,
+        rents.begining as begining_date,
+        DATEADD(DAY, SUM(rent_extensions.number_of_days), rents.begining) as ending_date
+    FROM rents
+    JOIN rent_extensions
+        ON rent_extensions.rent_id = rents.rent_id
+    GROUP BY rents.rent_id, rents.begining;
+    ```
+- **Effekt użycia:**
+    <br><img src="images/view_rents_timespan.png">
 
-```sql
-CREATE VIEW rents_active AS
-SELECT
-    rent_id,
-    begining_date,
-    ending_date
-FROM rents_timespan
-WHERE begining_date < GETDATE() AND ending_date > GETDATE();
-```
+### Widok rents_active:
+- **Implementacja:**
+    ```sql
+    CREATE VIEW rents_active AS
+    SELECT
+        rent_id,
+        begining_date,
+        ending_date
+    FROM rents_timespan
+    WHERE begining_date < GETDATE() AND ending_date > GETDATE();
+    ```
+- **Effekt użycia:**
+    <br><img src="images/view_rents_active.png">
 
-```sql
-CREATE VIEW rents_expired AS
-SELECT
-    rent_id,
-    begining_date,
-    ending_date
-FROM rents_timespan
-WHERE ending_date < GETDATE();
-```
+### Widok rents_expired:
+- **Implementacja:**
+    ```sql
+    CREATE VIEW rents_expired AS
+    SELECT
+        rent_id,
+        begining_date,
+        ending_date
+    FROM rents_timespan
+    WHERE ending_date < GETDATE();
+    ```
+- **Effekt użycia:**
+    <br><img src="images/view_rents_expired.png">
 
-```sql
-CREATE VIEW discounts_used AS
-SELECT discount_id FROM rent_services
-WHERE discount_id IS NOT NULL
-UNION
-SELECT discount_id FROM rent_extensions
-WHERE discount_id IS NOT NULL;
-```
+### Widok discounts_used:
+- **Implementacja:**
+    ```sql
+    CREATE VIEW discounts_used AS
+    SELECT discount_id FROM rent_services
+    WHERE discount_id IS NOT NULL
+    UNION
+    SELECT discount_id FROM rent_extensions
+    WHERE discount_id IS NOT NULL;
+    ```
+- **Effekt użycia:**
+    <br><img src="images/view_discounts_used.png">
 
-```sql
-CREATE VIEW discounts_available AS
-SELECT discount_id, code
-FROM discounts
-WHERE (SELECT COUNT(*) FROM discounts_used WHERE discount_id = discounts.discount_id) = 0;
-```
+### Widok discounts_available:
+- **Implementacja:**
+    ```sql
+    CREATE VIEW discounts_available AS
+    SELECT discount_id, code
+    FROM discounts
+    WHERE (SELECT COUNT(*) FROM discounts_used WHERE discount_id = discounts.discount_id) = 0;
+    ```
+- **Effekt użycia:**
+    <br><img src="images/view_discounts_available.png">
 
 ## Procedury/funkcje
 
