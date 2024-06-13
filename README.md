@@ -388,4 +388,142 @@ CREATE TABLE rent_services(
 
 ## Procedury/funkcje
 
+```sql
+CREATE PROCEDURE AddRentExtension
+    @rent_id INT,
+    @number_of_days INT,
+    @discount_code VARCHAR(8) = NULL
+AS
+BEGIN
+    DECLARE @discount_id INT = NULL;
+    IF @discount_code IS NOT NULL
+    BEGIN
+        IF @discount_code NOT IN (SELECT code FROM discounts_available)
+        BEGIN
+            PRINT 'Discount is not available!';
+            RETURN;
+        END
+        SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
+    END
+    INSERT INTO rent_extensions(rent_id, number_of_days, discount_id)
+    VALUES (
+        @rent_id,
+        @number_of_days,
+        @discount_id
+    );
+END;
+```
+
+```sql
+CREATE PROCEDURE AddNewCar
+    @CarPricingGroupId INT,
+    @CarTypeDescription VARCHAR(255),
+    @CarManufacturerDescription VARCHAR(255),
+    @CarModelDescription VARCHAR(32),
+    @GearboxId INT,
+    @Milage INT,
+    @Horsepower INT,
+    @Deposit INT,
+    @OilChangeRate INT
+AS
+BEGIN
+    DECLARE @CarTypeId INT;
+    DECLARE @CarManufacturerId INT;
+    DECLARE @CarModelId INT;
+
+    IF @CarTypeDescription IN (SELECT description FROM car_types)
+    BEGIN
+        SELECT @CarTypeId = car_type_id FROM car_types WHERE description = @CarTypeDescription;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO car_types (description) VALUES (@CarTypeDescription);
+        SELECT @CarTypeId = SCOPE_IDENTITY();
+    END
+
+    IF @CarManufacturerDescription IN (SELECT description FROM car_manufacturers)
+    BEGIN
+        SELECT @CarManufacturerId = car_manufacturer_id FROM car_manufacturers WHERE description = @CarManufacturerDescription;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO car_manufacturers (description) VALUES (@CarManufacturerDescription);
+        SELECT @CarManufacturerId = SCOPE_IDENTITY();
+    END
+
+    IF @CarModelDescription IN (SELECT model FROM car_models)
+    BEGIN
+        SELECT @CarModelId = car_model_id FROM car_models WHERE car_manufacturer_id = @CarManufacturerId AND model = @CarModelDescription;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO car_models (car_manufacturer_id, model) VALUES (@CarManufacturerId, @CarModelDescription);
+        SELECT @CarModelId = SCOPE_IDENTITY();
+    END
+
+    INSERT INTO cars (
+        car_pricing_group_id, 
+        car_type_id, 
+        car_model_id, 
+        gearbox_id, 
+        milage, 
+        horsepower, 
+        deposit, 
+        oil_change_rate, 
+        out_of_service
+    ) VALUES (
+        @CarPricingGroupId, 
+        @CarTypeId, 
+        @CarModelId, 
+        @GearboxId, 
+        @Milage, 
+        @Horsepower, 
+        @Deposit, 
+        @OilChangeRate, 
+        0
+    );
+END;
+```
+
+```sql
+CREATE PROCEDURE AddRentServicePurchase
+    @rent_id INT,
+    @service_id INT,
+    @discount_code VARCHAR(8) = NULL
+AS
+BEGIN
+    DECLARE @discount_id INT = NULL;
+    DECLARE @discount_value DECIMAL(3, 2) = 0.00;
+    DECLARE @client_id INT;
+    DECLARE @original_price INT;
+
+    IF @discount_code IS NOT NULL
+    BEGIN
+        IF @discount_code NOT IN (SELECT code FROM discounts_available)
+        BEGIN
+            PRINT 'Discount is not available!';
+            RETURN;
+        END
+        SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
+        SET @discount_value = (SELECT discount FROM discounts WHERE code = @discount_code);
+    END
+
+    SELECT @client_id = client_id
+    FROM rents
+    WHERE rent_id = @rent_id;
+
+    SELECT @original_price = price
+    FROM services
+    WHERE service_id = @service_id;
+
+    INSERT INTO rent_services (rent_id, service_id, price, discount_id)
+    VALUES (
+        @rent_id,
+        @service_id,
+        @original_price * (1 - @discount_value),
+        @discount_id
+    );
+END;
+```
+
 ## Triggery
