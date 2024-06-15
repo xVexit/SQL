@@ -334,6 +334,7 @@ CREATE TABLE rent_services(
     CREATE VIEW rents_timespan AS
     SELECT
         rents.rent_id,
+        rents.car_id,
         rents.begining as begining_date,
         DATEADD(DAY, SUM(rent_extensions.number_of_days), rents.begining) as ending_date
     FROM rents
@@ -350,6 +351,7 @@ CREATE TABLE rent_services(
     CREATE VIEW rents_active AS
     SELECT
         rent_id,
+        car_id,
         begining_date,
         ending_date
     FROM rents_timespan
@@ -364,6 +366,7 @@ CREATE TABLE rent_services(
     CREATE VIEW rents_expired AS
     SELECT
         rent_id,
+        car_id,
         begining_date,
         ending_date
     FROM rents_timespan
