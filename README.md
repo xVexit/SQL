@@ -410,8 +410,7 @@ BEGIN
     BEGIN
         IF @discount_code NOT IN (SELECT code FROM discounts_available)
         BEGIN
-            PRINT 'Discount is not available!';
-            RETURN;
+            THROW 50000, 'Discount is not available!', 1;
         END
         SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
     END
@@ -511,8 +510,7 @@ BEGIN
     BEGIN
         IF @discount_code NOT IN (SELECT code FROM discounts_available)
         BEGIN
-            PRINT 'Discount is not available!';
-            RETURN;
+            THROW 50000, 'Discount is not available!', 1;
         END
         SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
         SET @discount_value = (SELECT discount FROM discounts WHERE code = @discount_code);
