@@ -406,6 +406,12 @@ CREATE PROCEDURE AddRentExtension
 AS
 BEGIN
     DECLARE @discount_id INT = NULL;
+
+    IF @rent_id NOT IN (SELECT rent_id FROM rents_active)
+    BEGIN
+        THROW 50001, 'The rent has already expired!', 1;
+    END
+
     IF @discount_code IS NOT NULL
     BEGIN
         IF @discount_code NOT IN (SELECT code FROM discounts_available)
@@ -414,6 +420,7 @@ BEGIN
         END
         SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
     END
+
     INSERT INTO rent_extensions(rent_id, number_of_days, discount_id)
     VALUES (
         @rent_id,
@@ -505,6 +512,11 @@ BEGIN
     DECLARE @discount_value DECIMAL(3, 2) = 0.00;
     DECLARE @client_id INT;
     DECLARE @original_price INT;
+
+    IF @rent_id NOT IN (SELECT rent_id FROM rents_active)
+    BEGIN
+        THROW 50001, 'The rent has already expired!', 1;
+    END
 
     IF @discount_code IS NOT NULL
     BEGIN
