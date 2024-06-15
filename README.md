@@ -151,7 +151,8 @@ CREATE TABLE car_pricing_group(
     car_pricing_group_id INT NOT NULL IDENTITY(1, 1),
     price_per_day INT NOT NULL CHECK (price_per_day > 0),
     description VARCHAR(255) NOT NULL,
-    PRIMARY KEY(car_pricing_group_id)
+    PRIMARY KEY (car_pricing_group_id),
+    CONSTRAINT car_pricing_group_unique_description UNIQUE (description)
 );
 ```
 
@@ -159,7 +160,8 @@ CREATE TABLE car_pricing_group(
 CREATE TABLE car_types(
     car_type_id INT NOT NULL IDENTITY(1, 1),
     description VARCHAR(255) NOT NULL,
-    PRIMARY KEY(car_type_id)
+    PRIMARY KEY (car_type_id),
+    CONSTRAINT car_types_unique_description UNIQUE (description)
 );
 ```
 
@@ -167,7 +169,8 @@ CREATE TABLE car_types(
 CREATE TABLE car_manufacturers(
     car_manufacturer_id INT NOT NULL IDENTITY(1, 1),
     description VARCHAR(255) NOT NULL,
-    PRIMARY KEY(car_manufacturer_id)
+    PRIMARY KEY (car_manufacturer_id),
+    CONSTRAINT car_manufacturers_unique_description UNIQUE (description)
 );
 ```
 
@@ -176,7 +179,8 @@ CREATE TABLE car_models(
     car_model_id INT NOT NULL IDENTITY(1, 1),
     car_manufacturer_id INT NOT NULL,
     model VARCHAR(32) NOT NULL,
-    PRIMARY KEY(car_model_id),
+    PRIMARY KEY (car_model_id),
+    CONSTRAINT car_models_unique_model UNIQUE (car_manufacturer_id, model),
     CONSTRAINT car_models_car_manufacturer_id FOREIGN KEY (car_manufacturer_id) REFERENCES car_manufacturers(car_manufacturer_id)
 );
 ```
@@ -185,7 +189,8 @@ CREATE TABLE car_models(
 CREATE TABLE gearboxes(
     gearbox_id INT NOT NULL IDENTITY(1, 1),
     description VARCHAR(255) NOT NULL,
-    PRIMARY KEY(gearbox_id)
+    PRIMARY KEY (gearbox_id),
+    CONSTRAINT gearboxes_unique_description UNIQUE (description)
 );
 ```
 
@@ -201,7 +206,7 @@ CREATE TABLE cars(
     deposit INT NOT NULL CHECK (deposit >= 0),
     oil_change_rate INT NOT NULL CHECK (oil_change_rate > 0),
     out_of_service BIT NOT NULL,
-    PRIMARY KEY(car_id),
+    PRIMARY KEY (car_id),
     CONSTRAINT cars_car_pricing_group_id FOREIGN KEY (car_pricing_group_id) REFERENCES car_pricing_group(car_pricing_group_id),
     CONSTRAINT cars_car_type_id FOREIGN KEY (car_type_id) REFERENCES car_types(car_type_id),
     CONSTRAINT cars_car_model_id FOREIGN KEY (car_model_id) REFERENCES car_models(car_model_id),
@@ -213,7 +218,8 @@ CREATE TABLE cars(
 CREATE TABLE cities(
     city_id INT NOT NULL IDENTITY(1, 1),
     city_name VARCHAR(32) NOT NULL,
-    PRIMARY KEY(city_id)
+    PRIMARY KEY (city_id),
+    CONSTRAINT cities_unique_city_name UNIQUE (city_name)
 );
 ```
 
@@ -229,7 +235,8 @@ CREATE TABLE clients(
     postal_code VARCHAR(6) NOT NULL,
     id_number VARCHAR(16) NOT NULL,
     email VARCHAR(32) NOT NULL,
-    PRIMARY KEY(client_id),
+    PRIMARY KEY (client_id),
+    CONSTRAINT clients_unique_email UNIQUE (name, surname, email),
     CONSTRAINT clients_city_id FOREIGN KEY (city_id) REFERENCES cities(city_id)
 );
 ```
@@ -241,7 +248,7 @@ CREATE TABLE rents(
     client_id INT NOT NULL,
     begining DATETIME NOT NULL,
     price_per_day INT NOT NULL CHECK (price_per_day > 0),
-    PRIMARY KEY(rent_id),
+    PRIMARY KEY (rent_id),
     CONSTRAINT rents_car_id FOREIGN KEY (car_id) REFERENCES cars(car_id),
     CONSTRAINT rents_client_id FOREIGN KEY (client_id) REFERENCES clients(client_id)
 );
@@ -253,7 +260,8 @@ CREATE TABLE discounts(
     client_id INT NOT NULL,
     discount DECIMAL(3, 2) NOT NULL CHECK (discount > 0 AND discount < 1),
     code VARCHAR(8) NOT NULL,
-    PRIMARY KEY(discount_id),
+    PRIMARY KEY (discount_id),
+    CONSTRAINT discounts_unique_code UNIQUE (client_id, code),
     CONSTRAINT discounts_client_id FOREIGN KEY (client_id) REFERENCES clients(client_id)
 );
 ```
@@ -264,7 +272,7 @@ CREATE TABLE rent_extensions(
     rent_id INT NOT NULL,
     number_of_days INT NOT NULL CHECK (number_of_days > 0),
     discount_id INT NULL,
-    PRIMARY KEY(rent_extension_id),
+    PRIMARY KEY (rent_extension_id),
     CONSTRAINT rent_extensions_rent_id FOREIGN KEY (rent_id) REFERENCES rents(rent_id),
     CONSTRAINT rent_extensions_discount_id FOREIGN KEY (discount_id) REFERENCES discounts(discount_id)
 );
@@ -275,7 +283,8 @@ CREATE TABLE insurance_companies(
     insurance_company_id INT NOT NULL IDENTITY(1, 1),
     phone_number VARCHAR(16) NOT NULL,
     description VARCHAR(255) NOT NULL,
-    PRIMARY KEY(insurance_company_id)
+    PRIMARY KEY (insurance_company_id),
+    CONSTRAINT insurance_companies_unique_description UNIQUE (description)
 );
 ```
 
@@ -286,7 +295,7 @@ CREATE TABLE insurances(
     insurance_company_id INT NOT NULL,
     begining_date DATETIME NOT NULL,
     end_date DATETIME NOT NULL,
-    PRIMARY KEY(insurance_id),
+    PRIMARY KEY (insurance_id),
     CONSTRAINT insurances_car_id FOREIGN KEY (car_id) REFERENCES cars(car_id),
     CONSTRAINT insurances_insurance_company_id FOREIGN KEY (insurance_company_id) REFERENCES insurance_companies(insurance_company_id),
     CONSTRAINT date_check CHECK (begining_date < end_date)
@@ -298,7 +307,8 @@ CREATE TABLE services(
     service_id INT NOT NULL IDENTITY(1, 1),
     price INT NOT NULL CHECK (price > 0),
     description VARCHAR(255) NOT NULL,
-    PRIMARY KEY(service_id)
+    PRIMARY KEY (service_id),
+    CONSTRAINT services_unique_description UNIQUE (description)
 );
 ```
 
@@ -309,7 +319,7 @@ CREATE TABLE rent_services(
     rent_id INT NOT NULL,
     price INT NOT NULL CHECK (price > 0),
     discount_id INT NULL,
-    PRIMARY KEY(rent_service_id),
+    PRIMARY KEY (rent_service_id),
     CONSTRAINT rent_services_service_id FOREIGN KEY (service_id) REFERENCES services(service_id),
     CONSTRAINT rent_services_rent_id FOREIGN KEY (rent_id) REFERENCES rents(rent_id),
     CONSTRAINT rent_services_discount_id FOREIGN KEY (discount_id) REFERENCES discounts(discount_id)
