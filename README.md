@@ -389,7 +389,7 @@ CREATE TABLE rent_services(
 - **Implementacja:**
     ```sql
     CREATE VIEW discounts_available AS
-    SELECT discount_id, code
+    SELECT client_id, discount_id, code
     FROM discounts
     WHERE (SELECT COUNT(*) FROM discounts_used WHERE discount_id = discounts.discount_id) = 0;
     ```
