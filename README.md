@@ -492,6 +492,51 @@ END;
 ```
 
 ```sql
+CREATE PROCEDURE AddRentServicePurchase
+    @rent_id INT,
+    @service_id INT,
+    @discount_code VARCHAR(8) = NULL
+AS
+BEGIN
+    DECLARE @discount_id INT = NULL;
+    DECLARE @discount_value DECIMAL(3, 2) = 0.00;
+    DECLARE @client_id INT;
+    DECLARE @original_price INT;
+
+    IF @rent_id NOT IN (SELECT rent_id FROM rents_active)
+    BEGIN
+        THROW 50001, 'The rent has already expired!', 1;
+    END
+
+    IF @discount_code IS NOT NULL
+    BEGIN
+        IF @discount_code NOT IN (SELECT code FROM discounts_available)
+        BEGIN
+            THROW 50000, 'Discount is not available!', 1;
+        END
+        SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
+        SET @discount_value = (SELECT discount FROM discounts WHERE code = @discount_code);
+    END
+
+    SELECT @client_id = client_id
+    FROM rents
+    WHERE rent_id = @rent_id;
+
+    SELECT @original_price = price
+    FROM services
+    WHERE service_id = @service_id;
+
+    INSERT INTO rent_services (rent_id, service_id, price, discount_id)
+    VALUES (
+        @rent_id,
+        @service_id,
+        @original_price * (1 - @discount_value),
+        @discount_id
+    );
+END;
+```
+
+```sql
 CREATE PROCEDURE AddNewCar
     @CarPricingGroupId INT,
     @CarTypeDescription VARCHAR(255),
@@ -558,51 +603,6 @@ BEGIN
         @Deposit, 
         @OilChangeRate, 
         0
-    );
-END;
-```
-
-```sql
-CREATE PROCEDURE AddRentServicePurchase
-    @rent_id INT,
-    @service_id INT,
-    @discount_code VARCHAR(8) = NULL
-AS
-BEGIN
-    DECLARE @discount_id INT = NULL;
-    DECLARE @discount_value DECIMAL(3, 2) = 0.00;
-    DECLARE @client_id INT;
-    DECLARE @original_price INT;
-
-    IF @rent_id NOT IN (SELECT rent_id FROM rents_active)
-    BEGIN
-        THROW 50001, 'The rent has already expired!', 1;
-    END
-
-    IF @discount_code IS NOT NULL
-    BEGIN
-        IF @discount_code NOT IN (SELECT code FROM discounts_available)
-        BEGIN
-            THROW 50000, 'Discount is not available!', 1;
-        END
-        SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
-        SET @discount_value = (SELECT discount FROM discounts WHERE code = @discount_code);
-    END
-
-    SELECT @client_id = client_id
-    FROM rents
-    WHERE rent_id = @rent_id;
-
-    SELECT @original_price = price
-    FROM services
-    WHERE service_id = @service_id;
-
-    INSERT INTO rent_services (rent_id, service_id, price, discount_id)
-    VALUES (
-        @rent_id,
-        @service_id,
-        @original_price * (1 - @discount_value),
-        @discount_id
     );
 END;
 ```
