@@ -438,6 +438,23 @@ CREATE TABLE rent_services(
         <img src="images/view_car_list.png">
     </div>
 
+### Widok car_prices:
+- **Implementacja:**
+    ```sql
+    CREATE VIEW car_prices AS
+    SELECT
+        cars.car_id as car_id,
+        car_pricing_group.price_per_day as car_price_per_day,
+        car_pricing_group.description as car_price_description
+    FROM cars
+        JOIN car_pricing_group
+            ON cars.car_pricing_group_id = car_pricing_group.car_pricing_group_id;
+    ```
+- **Effect użycia:**
+    <div style="width: 400px; heigth: 400px">
+        <img src="images/view_car_prices.png">
+    </div>
+
 ### Widok cars_available:
 - **Implementacja:**
     ```sql
@@ -482,6 +499,54 @@ BEGIN
         SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
     END
 
+    INSERT INTO rent_extensions(rent_id, number_of_days, discount_id)
+    VALUES (
+        @rent_id,
+        @number_of_days,
+        @discount_id
+    );
+END;
+```
+
+```sql
+CREATE PROCEDURE AddRent
+    @car_id INT,
+    @client_id INT,
+    @number_of_days INT,
+    @discount_code VARCHAR(8) = NULL
+AS
+BEGIN
+    DECLARE @car_price_per_day INT;
+    DECLARE @rent_id INT;
+    DECLARE @discount_id INT = NULL;
+
+    IF @car_id NOT IN (SELECT car_id FROM cars_available)
+    BEGIN
+        THROW 50002, 'Car is not available', 1;
+    END
+
+    IF @discount_code IS NOT NULL
+    BEGIN
+        IF @discount_code NOT IN (SELECT code FROM discounts_available)
+        BEGIN
+            THROW 50000, 'Discount is not available!', 1;
+        END
+        SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
+    END
+
+    SELECT @car_price_per_day = car_price_per_day
+    FROM car_prices
+    WHERE car_id = @car_id;
+
+    INSERT INTO rents (car_id, client_id, begining, price_per_day)
+    VALUES (
+        @car_id,
+        @client_id,
+        GETDATE(),
+        @car_price_per_day
+    );
+
+    SELECT @rent_id = SCOPE_IDENTITY();
     INSERT INTO rent_extensions(rent_id, number_of_days, discount_id)
     VALUES (
         @rent_id,
