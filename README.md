@@ -335,12 +335,13 @@ CREATE TABLE rent_services(
     SELECT
         rents.rent_id,
         rents.car_id,
+        rents.client_id,
         rents.begining as begining_date,
         DATEADD(DAY, SUM(rent_extensions.number_of_days), rents.begining) as ending_date
     FROM rents
     JOIN rent_extensions
         ON rent_extensions.rent_id = rents.rent_id
-    GROUP BY rents.rent_id, rents.car_id, rents.begining;
+    GROUP BY rents.rent_id, rents.car_id, rents.client_id, rents.begining;
     ```
 - **Effekt użycia:**
     <div style="width: 400px; heigth: 400px">
@@ -354,6 +355,7 @@ CREATE TABLE rent_services(
     SELECT
         rent_id,
         car_id,
+        client_id,
         begining_date,
         ending_date
     FROM rents_timespan
@@ -371,6 +373,7 @@ CREATE TABLE rent_services(
     SELECT
         rent_id,
         car_id,
+        client_id,
         begining_date,
         ending_date
     FROM rents_timespan
@@ -484,19 +487,28 @@ CREATE PROCEDURE AddRentExtension
 AS
 BEGIN
     DECLARE @discount_id INT = NULL;
+    DECLARE @client_id INT = NULL;
 
     IF @rent_id NOT IN (SELECT rent_id FROM rents_active)
     BEGIN
         THROW 50001, 'The rent has already expired!', 1;
     END
 
+    SELECT @client_id = client_id
+    FROM rents
+    WHERE rent_id = @rent_id;
+
     IF @discount_code IS NOT NULL
     BEGIN
-        IF @discount_code NOT IN (SELECT code FROM discounts_available)
+        IF @discount_code NOT IN (SELECT code FROM discounts_available WHERE client_id = @client_id)
         BEGIN
             THROW 50000, 'Discount is not available!', 1;
         END
-        SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
+        SET @discount_id = (
+            SELECT discount_id
+            FROM discounts
+            WHERE code = @discount_code AND client_id = @client_id
+        );
     END
 
     INSERT INTO rent_extensions(rent_id, number_of_days, discount_id)
@@ -527,11 +539,15 @@ BEGIN
 
     IF @discount_code IS NOT NULL
     BEGIN
-        IF @discount_code NOT IN (SELECT code FROM discounts_available)
+        IF @discount_code NOT IN (SELECT code FROM discounts_available WHERE client_id = @client_id)
         BEGIN
             THROW 50000, 'Discount is not available!', 1;
         END
-        SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
+        SET @discount_id = (
+            SELECT discount_id
+            FROM discounts
+            WHERE code = @discount_code AND client_id = @client_id
+        );
     END
 
     SELECT @car_price_per_day = car_price_per_day
