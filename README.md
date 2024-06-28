@@ -340,7 +340,7 @@ CREATE TABLE rent_services(
     FROM rents
     JOIN rent_extensions
         ON rent_extensions.rent_id = rents.rent_id
-    GROUP BY rents.rent_id, rents.begining;
+    GROUP BY rents.rent_id, rents.car_id, rents.begining;
     ```
 - **Effekt użycia:**
     <br><img src="images/view_rents_timespan.png">
@@ -398,6 +398,50 @@ CREATE TABLE rent_services(
     ```
 - **Effekt użycia:**
     <br><img src="images/view_discounts_available.png">
+
+### Widok car_list:
+- **Implementacja:**
+    ```sql
+    CREATE VIEW car_list AS
+    SELECT
+        cars.car_id,
+        car_types.description as car_type,
+        car_models.model as car_model,
+        car_manufacturers.description as car_manufacturer,
+        car_pricing_group.description as car_pricing_group,
+        gearboxes.description as car_gearbox,
+        cars.out_of_service as car_out_of_service
+    FROM cars
+    JOIN car_types
+        ON cars.car_type_id = car_types.car_type_id
+    JOIN car_models
+        ON cars.car_model_id = car_models.car_model_id
+    JOIN car_manufacturers
+        ON car_models.car_manufacturer_id = car_manufacturers.car_manufacturer_id
+    JOIN car_pricing_group
+        ON cars.car_pricing_group_id = car_pricing_group.car_pricing_group_id
+    JOIN gearboxes
+        ON cars.gearbox_id = gearboxes.gearbox_id;
+    ```
+- **Effekt użycia:**
+    <br><img src="images/view_car_list.png">
+
+### Widok cars_available:
+- **Implementacja:**
+    ```sql
+    CREATE VIEW cars_available AS
+    SELECT
+        car_id,
+        car_type,
+        car_model,
+        car_manufacturer,
+        car_pricing_group,
+        car_gearbox
+    FROM car_list
+    WHERE car_id NOT IN (SELECT car_id FROM rents_active) AND car_out_of_service = 0;
+    ```
+- **Effekt użycia:**
+    <br><img src="images/view_cars_available.png">
 
 ## Procedury/funkcje
 
