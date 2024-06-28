@@ -343,7 +343,9 @@ CREATE TABLE rent_services(
     GROUP BY rents.rent_id, rents.car_id, rents.begining;
     ```
 - **Effekt użycia:**
-    <br><img src="images/view_rents_timespan.png">
+    <div style="width: 400px; heigth: 400px">
+        <img src="images/view_rents_timespan.png">
+    </dev>
 
 ### Widok rents_active:
 - **Implementacja:**
@@ -358,7 +360,9 @@ CREATE TABLE rent_services(
     WHERE begining_date < GETDATE() AND ending_date > GETDATE();
     ```
 - **Effekt użycia:**
-    <br><img src="images/view_rents_active.png">
+    <div style="width: 400px; heigth: 400px">
+        <img src="images/view_rents_active.png">
+    </div>
 
 ### Widok rents_expired:
 - **Implementacja:**
@@ -373,7 +377,9 @@ CREATE TABLE rent_services(
     WHERE ending_date < GETDATE();
     ```
 - **Effekt użycia:**
-    <br><img src="images/view_rents_expired.png">
+    <div style="width: 400px; heigth: 400px">
+        <img src="images/view_rents_expired.png">
+    </div>
 
 ### Widok discounts_used:
 - **Implementacja:**
@@ -386,7 +392,9 @@ CREATE TABLE rent_services(
     WHERE discount_id IS NOT NULL;
     ```
 - **Effekt użycia:**
-    <br><img src="images/view_discounts_used.png">
+    <div style="width: 400px; heigth: 400px">
+        <img src="images/view_discounts_used.png">
+    </div>
 
 ### Widok discounts_available:
 - **Implementacja:**
@@ -397,7 +405,9 @@ CREATE TABLE rent_services(
     WHERE (SELECT COUNT(*) FROM discounts_used WHERE discount_id = discounts.discount_id) = 0;
     ```
 - **Effekt użycia:**
-    <br><img src="images/view_discounts_available.png">
+    <div style="width: 400px; heigth: 400px">
+        <img src="images/view_discounts_available.png">
+    </div>
 
 ### Widok car_list:
 - **Implementacja:**
@@ -424,7 +434,9 @@ CREATE TABLE rent_services(
         ON cars.gearbox_id = gearboxes.gearbox_id;
     ```
 - **Effekt użycia:**
-    <br><img src="images/view_car_list.png">
+    <div style="width: 400px; heigth: 400px">
+        <img src="images/view_car_list.png">
+    </div>
 
 ### Widok cars_available:
 - **Implementacja:**
@@ -441,7 +453,9 @@ CREATE TABLE rent_services(
     WHERE car_id NOT IN (SELECT car_id FROM rents_active) AND car_out_of_service = 0;
     ```
 - **Effekt użycia:**
-    <br><img src="images/view_cars_available.png">
+    <div style="width: 400px; heigth: 400px">
+        <img src="images/view_cars_available.png">
+    </div>
 
 ## Procedury/funkcje
 
