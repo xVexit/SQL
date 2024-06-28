@@ -695,5 +695,3 @@ CREATE TABLE rent_services(
         );
     END;
     ```
-
-## Triggery
