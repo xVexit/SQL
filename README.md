@@ -479,213 +479,221 @@ CREATE TABLE rent_services(
 
 ## Procedury/funkcje
 
-```sql
-CREATE PROCEDURE AddRentExtension
-    @rent_id INT,
-    @number_of_days INT,
-    @discount_code VARCHAR(8) = NULL
-AS
-BEGIN
-    DECLARE @discount_id INT = NULL;
-    DECLARE @client_id INT = NULL;
-
-    IF @rent_id NOT IN (SELECT rent_id FROM rents_active)
+### Procedura AddRentExtension:
+- **Implementacja:**
+    ```sql
+    CREATE PROCEDURE AddRentExtension
+        @rent_id INT,
+        @number_of_days INT,
+        @discount_code VARCHAR(8) = NULL
+    AS
     BEGIN
-        THROW 50001, 'The rent has already expired!', 1;
-    END
+        DECLARE @discount_id INT = NULL;
+        DECLARE @client_id INT = NULL;
 
-    SELECT @client_id = client_id
-    FROM rents
-    WHERE rent_id = @rent_id;
-
-    IF @discount_code IS NOT NULL
-    BEGIN
-        IF @discount_code NOT IN (SELECT code FROM discounts_available WHERE client_id = @client_id)
+        IF @rent_id NOT IN (SELECT rent_id FROM rents_active)
         BEGIN
-            THROW 50000, 'Discount is not available!', 1;
+            THROW 50001, 'The rent has already expired!', 1;
         END
-        SET @discount_id = (
-            SELECT discount_id
-            FROM discounts
-            WHERE code = @discount_code AND client_id = @client_id
+
+        SELECT @client_id = client_id
+        FROM rents
+        WHERE rent_id = @rent_id;
+
+        IF @discount_code IS NOT NULL
+        BEGIN
+            IF @discount_code NOT IN (SELECT code FROM discounts_available WHERE client_id = @client_id)
+            BEGIN
+                THROW 50000, 'Discount is not available!', 1;
+            END
+            SET @discount_id = (
+                SELECT discount_id
+                FROM discounts
+                WHERE code = @discount_code AND client_id = @client_id
+            );
+        END
+
+        INSERT INTO rent_extensions(rent_id, number_of_days, discount_id)
+        VALUES (
+            @rent_id,
+            @number_of_days,
+            @discount_id
         );
-    END
+    END;
+    ```
 
-    INSERT INTO rent_extensions(rent_id, number_of_days, discount_id)
-    VALUES (
-        @rent_id,
-        @number_of_days,
-        @discount_id
-    );
-END;
-```
-
-```sql
-CREATE PROCEDURE AddRent
-    @car_id INT,
-    @client_id INT,
-    @number_of_days INT,
-    @discount_code VARCHAR(8) = NULL
-AS
-BEGIN
-    DECLARE @car_price_per_day INT;
-    DECLARE @rent_id INT;
-    DECLARE @discount_id INT = NULL;
-
-    IF @car_id NOT IN (SELECT car_id FROM cars_available)
+### Procedura AddRent:
+- **Implementacja:**
+    ```sql
+    CREATE PROCEDURE AddRent
+        @car_id INT,
+        @client_id INT,
+        @number_of_days INT,
+        @discount_code VARCHAR(8) = NULL
+    AS
     BEGIN
-        THROW 50002, 'Car is not available', 1;
-    END
+        DECLARE @car_price_per_day INT;
+        DECLARE @rent_id INT;
+        DECLARE @discount_id INT = NULL;
 
-    IF @discount_code IS NOT NULL
-    BEGIN
-        IF @discount_code NOT IN (SELECT code FROM discounts_available WHERE client_id = @client_id)
+        IF @car_id NOT IN (SELECT car_id FROM cars_available)
         BEGIN
-            THROW 50000, 'Discount is not available!', 1;
+            THROW 50002, 'Car is not available', 1;
         END
-        SET @discount_id = (
-            SELECT discount_id
-            FROM discounts
-            WHERE code = @discount_code AND client_id = @client_id
+
+        IF @discount_code IS NOT NULL
+        BEGIN
+            IF @discount_code NOT IN (SELECT code FROM discounts_available WHERE client_id = @client_id)
+            BEGIN
+                THROW 50000, 'Discount is not available!', 1;
+            END
+            SET @discount_id = (
+                SELECT discount_id
+                FROM discounts
+                WHERE code = @discount_code AND client_id = @client_id
+            );
+        END
+
+        SELECT @car_price_per_day = car_price_per_day
+        FROM car_prices
+        WHERE car_id = @car_id;
+
+        INSERT INTO rents (car_id, client_id, begining, price_per_day)
+        VALUES (
+            @car_id,
+            @client_id,
+            GETDATE(),
+            @car_price_per_day
         );
-    END
 
-    SELECT @car_price_per_day = car_price_per_day
-    FROM car_prices
-    WHERE car_id = @car_id;
+        SELECT @rent_id = SCOPE_IDENTITY();
+        INSERT INTO rent_extensions(rent_id, number_of_days, discount_id)
+        VALUES (
+            @rent_id,
+            @number_of_days,
+            @discount_id
+        );
+    END;
+    ```
 
-    INSERT INTO rents (car_id, client_id, begining, price_per_day)
-    VALUES (
-        @car_id,
-        @client_id,
-        GETDATE(),
-        @car_price_per_day
-    );
-
-    SELECT @rent_id = SCOPE_IDENTITY();
-    INSERT INTO rent_extensions(rent_id, number_of_days, discount_id)
-    VALUES (
-        @rent_id,
-        @number_of_days,
-        @discount_id
-    );
-END;
-```
-
-```sql
-CREATE PROCEDURE AddRentServicePurchase
-    @rent_id INT,
-    @service_id INT,
-    @discount_code VARCHAR(8) = NULL
-AS
-BEGIN
-    DECLARE @discount_id INT = NULL;
-    DECLARE @discount_value DECIMAL(3, 2) = 0.00;
-    DECLARE @client_id INT;
-    DECLARE @original_price INT;
-
-    IF @rent_id NOT IN (SELECT rent_id FROM rents_active)
+### Procedura AddRentServicePurchase:
+- **Implementacja:**
+    ```sql
+    CREATE PROCEDURE AddRentServicePurchase
+        @rent_id INT,
+        @service_id INT,
+        @discount_code VARCHAR(8) = NULL
+    AS
     BEGIN
-        THROW 50001, 'The rent has already expired!', 1;
-    END
+        DECLARE @discount_id INT = NULL;
+        DECLARE @discount_value DECIMAL(3, 2) = 0.00;
+        DECLARE @client_id INT;
+        DECLARE @original_price INT;
 
-    IF @discount_code IS NOT NULL
-    BEGIN
-        IF @discount_code NOT IN (SELECT code FROM discounts_available)
+        IF @rent_id NOT IN (SELECT rent_id FROM rents_active)
         BEGIN
-            THROW 50000, 'Discount is not available!', 1;
+            THROW 50001, 'The rent has already expired!', 1;
         END
-        SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
-        SET @discount_value = (SELECT discount FROM discounts WHERE code = @discount_code);
-    END
 
-    SELECT @client_id = client_id
-    FROM rents
-    WHERE rent_id = @rent_id;
+        IF @discount_code IS NOT NULL
+        BEGIN
+            IF @discount_code NOT IN (SELECT code FROM discounts_available)
+            BEGIN
+                THROW 50000, 'Discount is not available!', 1;
+            END
+            SET @discount_id = (SELECT discount_id FROM discounts WHERE code = @discount_code);
+            SET @discount_value = (SELECT discount FROM discounts WHERE code = @discount_code);
+        END
 
-    SELECT @original_price = price
-    FROM services
-    WHERE service_id = @service_id;
+        SELECT @client_id = client_id
+        FROM rents
+        WHERE rent_id = @rent_id;
 
-    INSERT INTO rent_services (rent_id, service_id, price, discount_id)
-    VALUES (
-        @rent_id,
-        @service_id,
-        @original_price * (1 - @discount_value),
-        @discount_id
-    );
-END;
-```
+        SELECT @original_price = price
+        FROM services
+        WHERE service_id = @service_id;
 
-```sql
-CREATE PROCEDURE AddNewCar
-    @CarPricingGroupId INT,
-    @CarTypeDescription VARCHAR(255),
-    @CarManufacturerDescription VARCHAR(255),
-    @CarModelDescription VARCHAR(32),
-    @GearboxId INT,
-    @Milage INT,
-    @Horsepower INT,
-    @Deposit INT,
-    @OilChangeRate INT
-AS
-BEGIN
-    DECLARE @CarTypeId INT;
-    DECLARE @CarManufacturerId INT;
-    DECLARE @CarModelId INT;
+        INSERT INTO rent_services (rent_id, service_id, price, discount_id)
+        VALUES (
+            @rent_id,
+            @service_id,
+            @original_price * (1 - @discount_value),
+            @discount_id
+        );
+    END;
+    ```
 
-    IF @CarTypeDescription IN (SELECT description FROM car_types)
+### Procedura AddNewCar:
+- **Implementacja:**
+    ```sql
+    CREATE PROCEDURE AddNewCar
+        @CarPricingGroupId INT,
+        @CarTypeDescription VARCHAR(255),
+        @CarManufacturerDescription VARCHAR(255),
+        @CarModelDescription VARCHAR(32),
+        @GearboxId INT,
+        @Milage INT,
+        @Horsepower INT,
+        @Deposit INT,
+        @OilChangeRate INT
+    AS
     BEGIN
-        SELECT @CarTypeId = car_type_id FROM car_types WHERE description = @CarTypeDescription;
-    END
-    ELSE
-    BEGIN
-        INSERT INTO car_types (description) VALUES (@CarTypeDescription);
-        SELECT @CarTypeId = SCOPE_IDENTITY();
-    END
+        DECLARE @CarTypeId INT;
+        DECLARE @CarManufacturerId INT;
+        DECLARE @CarModelId INT;
 
-    IF @CarManufacturerDescription IN (SELECT description FROM car_manufacturers)
-    BEGIN
-        SELECT @CarManufacturerId = car_manufacturer_id FROM car_manufacturers WHERE description = @CarManufacturerDescription;
-    END
-    ELSE
-    BEGIN
-        INSERT INTO car_manufacturers (description) VALUES (@CarManufacturerDescription);
-        SELECT @CarManufacturerId = SCOPE_IDENTITY();
-    END
+        IF @CarTypeDescription IN (SELECT description FROM car_types)
+        BEGIN
+            SELECT @CarTypeId = car_type_id FROM car_types WHERE description = @CarTypeDescription;
+        END
+        ELSE
+        BEGIN
+            INSERT INTO car_types (description) VALUES (@CarTypeDescription);
+            SELECT @CarTypeId = SCOPE_IDENTITY();
+        END
 
-    IF @CarModelDescription IN (SELECT model FROM car_models)
-    BEGIN
-        SELECT @CarModelId = car_model_id FROM car_models WHERE car_manufacturer_id = @CarManufacturerId AND model = @CarModelDescription;
-    END
-    ELSE
-    BEGIN
-        INSERT INTO car_models (car_manufacturer_id, model) VALUES (@CarManufacturerId, @CarModelDescription);
-        SELECT @CarModelId = SCOPE_IDENTITY();
-    END
+        IF @CarManufacturerDescription IN (SELECT description FROM car_manufacturers)
+        BEGIN
+            SELECT @CarManufacturerId = car_manufacturer_id FROM car_manufacturers WHERE description = @CarManufacturerDescription;
+        END
+        ELSE
+        BEGIN
+            INSERT INTO car_manufacturers (description) VALUES (@CarManufacturerDescription);
+            SELECT @CarManufacturerId = SCOPE_IDENTITY();
+        END
 
-    INSERT INTO cars (
-        car_pricing_group_id, 
-        car_type_id, 
-        car_model_id, 
-        gearbox_id, 
-        milage, 
-        horsepower, 
-        deposit, 
-        oil_change_rate, 
-        out_of_service
-    ) VALUES (
-        @CarPricingGroupId, 
-        @CarTypeId, 
-        @CarModelId, 
-        @GearboxId, 
-        @Milage, 
-        @Horsepower, 
-        @Deposit, 
-        @OilChangeRate, 
-        0
-    );
-END;
-```
+        IF @CarModelDescription IN (SELECT model FROM car_models)
+        BEGIN
+            SELECT @CarModelId = car_model_id FROM car_models WHERE car_manufacturer_id = @CarManufacturerId AND model = @CarModelDescription;
+        END
+        ELSE
+        BEGIN
+            INSERT INTO car_models (car_manufacturer_id, model) VALUES (@CarManufacturerId, @CarModelDescription);
+            SELECT @CarModelId = SCOPE_IDENTITY();
+        END
+
+        INSERT INTO cars (
+            car_pricing_group_id, 
+            car_type_id, 
+            car_model_id, 
+            gearbox_id, 
+            milage, 
+            horsepower, 
+            deposit, 
+            oil_change_rate, 
+            out_of_service
+        ) VALUES (
+            @CarPricingGroupId, 
+            @CarTypeId, 
+            @CarModelId, 
+            @GearboxId, 
+            @Milage, 
+            @Horsepower, 
+            @Deposit, 
+            @OilChangeRate, 
+            0
+        );
+    END;
+    ```
 
 ## Triggery
